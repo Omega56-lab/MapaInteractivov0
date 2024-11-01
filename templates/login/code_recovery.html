@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperacion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_login/code_recovery.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h2>Ingrese el código enviado a su correo</h2>
+            <form action="" method="POST">
+                <div class="input-group">
+                    <input type="text" name="codigo" placeholder="1" maxlength="1" required oninput="moveToNext(this)">
+                    <input type="text" name="codigo" placeholder="2" maxlength="1" required oninput="moveToNext(this)">
+                    <input type="text" name="codigo" placeholder="3" maxlength="1" required oninput="moveToNext(this)">
+                    <input type="text" name="codigo" placeholder="4" maxlength="1" required oninput="moveToNext(this)">
+                    <input type="text" name="codigo" placeholder="5" maxlength="1" required oninput="moveToNext(this)">
+                    <input type="text" name="codigo" placeholder="6" maxlength="1" required oninput="moveToNext(this)">
+                </div>
+                {% if error %}
+                 <p class="error-message">{{ error }}</p>
+                {% endif %}
+                <button type="submit" class="login-btn">Verificar</button>
+            </form>
+        </div>        
+    </div>
+
+    <script>
+        // Función para permitir solo números
+        function restrictInput(e) {
+            e.value = e.value.replace(/[^0-9]/g, ''); // Elimina caracteres que no son números
+        }
+    
+        // Función para mover al siguiente input automáticamente
+        function moveToNext(input) {
+            restrictInput(input); // Restringir la entrada
+    
+            if (input.value.length >= 1 && !isNaN(input.value)) {
+                const nextInput = input.nextElementSibling;
+                if (nextInput) {
+                    nextInput.focus(); // Mueve el foco al siguiente input
+                }
+            }
+
+            if (input.value.length === 0) {
+                const previousInput = input.previousElementSibling;
+                if (previousInput) {
+                     previousInput.focus();
+                }
+            }
+
+            if (input.value.length === 0) {
+             // Mover el foco al input anterior
+              const previousInput = input.previousElementSibling;
+              if (previousInput) {
+                    previousInput.focus();
+                }
+            }
+            
+        }
+    
+        // Función para distribuir el código pegado
+        document.querySelectorAll('input[name="codigo"]').forEach(input => {
+            input.addEventListener('paste', function(event) {
+                const clipboardData = event.clipboardData.getData('text');
+                if (/^\d{6}$/.test(clipboardData)) { // Verifica si el contenido es un código de 6 dígitos
+                    event.preventDefault(); // Previene el comportamiento predeterminado
+                    const inputs = document.querySelectorAll('input[name="codigo"]');
+                    for (let i = 0; i < 6; i++) {
+                        inputs[i].value = clipboardData[i]; // Distribuye cada dígito en su input correspondiente
+                    }
+                }
+            });
+        });
+    
+        // Función para validar el código antes de enviar
+        function validateCode() {
+            const inputs = document.querySelectorAll('input[name="codigo"]');
+            let code = '';
+            inputs.forEach(input => {
+                code += input.value;
+            });
+            // Puedes agregar validaciones adicionales aquí si es necesario
+            return code.length === 6; // Verifica que se haya ingresado un código de 6 dígitos
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Interactivo</title>
+    <script src="{{ url_for('static', filename='js/js_admin/script.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_admin/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&loading=async&region=CL&language=es&callback=initMap" async defer></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    
+    <div class="search-bar">
+        <input type="text" placeholder="Busque aqui...." readonly>
+        <button type="button">
+            <img src="https://img.icons8.com/material-rounded/24/000000/search.png" alt="Search">
+        </button>
+    </div>
+    <div id="info-box"></div>
+    <div id="barra_izquierda">
+        <div>
+            <button id="filtro">
+                <img src="{{ url_for('static', filename='images/filtrar.png') }}" alt="img_filtro">
+            </button>
+            <p>Filtrar</p>
+        </div>
+        <div>
+            <button id="agregar-marcador" class="add-marker-btn">
+                <img src="{{ url_for('static', filename='images/add_marker.png') }}" alt="Agregar Marcador">
+            </button>
+            <p>Marcador</p>
+        </div>
+        
+    </div>
+    <img id="logo" src="{{ url_for('static', filename='images/Sello_Universal_Inclusivo.png') }}" alt="Logo">
+
+    <div class="user-menu">
+        <button class="user-button">{{ session['user_name'] }}</button>
+        <div class="dropdown-menu">
+            <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
+        </div>
+    </div>
+    
+    <!-- Modal del formulario -->
+    <div id="form-modal" class="modal">
+        <div class="modal-content">
+            <h1></h1>
+            <button type="button" id="close-modal" class="close">X</button>
+            <form id="add-building-form">
+                <label for="nombre">Nombre del Edificio:</label>
+                <input type="text" id="nombre" name="nombre" required>
+        
+                <label for="direccion">Dirección:</label>
+                <input type="text" id="direccion" name="direccion" required>
+        
+                <label for="latitud">Latitud:</label>
+                <input type="number" step="0.000001" id="latitud" name="latitud" required maxlength="9"><br>
+        
+                <label for="longitud">Longitud:</label>
+                <input type="number" step="0.000001" id="longitud" name="longitud" required maxlength="9"><br>
+        
+                <label for="tipo-accesibilidad">Tipo de Accesibilidad:</label>
+                <div id="tipo-accesibilidad-container">
+                    <!-- Los checkboxes se generarán dinámicamente desde el JavaScript -->
+                </div> 
+        
+                <button id="submit-button" class="btn-1" type="submit">Agregar Edificio</button>
+            </form>
+        </div>
+        
+    </div>
+</body>
+
+</html>

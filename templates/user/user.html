@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Interactivo</title>
+    <script src="{{ url_for('static', filename='js/js_user/script.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_user/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=marker&loading=async&region=CL&language=es&callback=initMap" async defer></script>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div class="search-bar">
+        <input type="text" placeholder="Busque aqui...." readonly>
+        <button type="button">
+            <img src="https://img.icons8.com/material-rounded/24/000000/search.png" alt="Search">
+        </button>
+    </div>
+    <div id="info-box"></div>
+    <div id="barra_izquierda">
+        <div>
+            <button id="filtro">
+                <img src="{{ url_for('static', filename='images/filtrar.png') }}" alt="img_filtro">
+            </button>
+            <p>Filtrar</p>
+        </div>
+    </div>
+
+    <img id="logo" src="{{ url_for('static', filename='images/Sello_Universal_Inclusivo.png') }}" alt="Logo">
+
+    <a href="{{ url_for('login') }}" class="login-button"><i class="fa fa-user" aria-hidden="true"></i> Admin</a>
+
+    
+
+</body>
+
+</html>
