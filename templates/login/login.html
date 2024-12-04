@@ -10,25 +10,35 @@
 <body>
     <a href="{{ url_for('home') }}" class="login-button"><i class="fa fa-arrow-left" aria-hidden="true"></i> Volver atras</a>
     <div class="login-container">
-        <div class="login-box">
-            <h2>Iniciar Sesion</h2>
-            <form action="/login" method="POST">
-                
-                <div class="input-group">
-                    <input type="email" placeholder="Correo" name="correo" required>
+        <div class="login-content">
+            <div class="login-branding">
+                <img src="{{ url_for('static', filename='images/Sello_Universal_Inclusivo.png') }}" alt="Logo" class="login-logo">
+                <h1 class="login-title">Mapa Sello Universal Inclusivo</h1>
+            </div>
+            <div class="login-box">
+                <h2>Iniciar Sesión</h2>
+                <form action="/login" method="POST">
+                    <div class="input-group">
+                        <input type="email" placeholder="Correo" name="correo" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" placeholder="Contraseña" name="password" required>
+                    </div>
+                    <button type="submit" class="login-btn">Entrar</button>
+                </form>
+                {% if error %}
+                     <p class="error-message">{{ error }}</p>
+                {% endif %}
+                <div class="forgot-password">
+                    <a href="{{ url_for('recovery') }}">¿Olvidaste tu contraseña?</a>
                 </div>
-                <div class="input-group">
-                    <input type="password" placeholder="Contraseña" name="password" required>
-                </div>
-                <button type="submit" class="login-btn">Entrar</button>
-            </form>
-            {% if error %}
-                 <p class="error-message">{{ error }}</p>
-            {% endif %}
-            <div class="forgot-password">
-                <a href="{{ url_for('recovery') }}">¿Olvidaste tu contraseña?</a>
             </div>
         </div>
     </div>
+
+    
+
+
+
 </body>
 </html>

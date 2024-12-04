@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Administradores</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_admin/add_admin.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="header-container">
+        <a href="{{ url_for('index') }}" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Volver atrás
+        </a>
+    </div>
+    <div class="container">
+        <h1>Gestión de Administradores</h1>
+        <button id="addAdminBtn" class="btn btn-primary">
+            Agregar Nuevo Admin
+        </button>
+        
+        <div class="table-container">
+            <table id="adminTable">
+                <thead>
+                    <tr>
+                        <th class="truncate-email">Nombre de Usuario</th>
+                        <th class="truncate-email">Email</th>
+                        <th>Rol</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="adminList">
+                    <!-- La lista de administradores se llenará dinámicamente aquí -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para Agregar/Editar Administrador -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Agregar Administrador</h2>
+            <form id="adminForm">
+                <input type="hidden" id="adminId" name="adminId">
+                <div class="form-group">
+                    <label for="nombre">Nombre de Usuario:</label>
+                    <input type="text" id="nombre" name="nombre" maxlength="20" placeholder="(máx. 20 caracteres)" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmEmail">Confirmar Email:</label>
+                    <input type="email" id="confirmEmail" name="confirmEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Contraseña:</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-submit">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/js_admin/add_admin.js') }}"></script>
+</body>
+</html>
+

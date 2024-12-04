@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Interactivo</title>
+    <title>Sello Universal Inclusivo</title>
     <script src="{{ url_for('static', filename='js/js_user/script.js') }}"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=restaurant" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style_user/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
@@ -14,27 +15,129 @@
 
 <body>
     <div id="map"></div>
-    <div class="search-bar">
-        <input type="text" placeholder="Busque aqui...." readonly>
-        <button type="button">
-            <img src="https://img.icons8.com/material-rounded/24/000000/search.png" alt="Search">
-        </button>
-    </div>
-    <div id="info-box"></div>
-    <div id="barra_izquierda">
-        <div>
-            <button id="filtro">
-                <img src="{{ url_for('static', filename='images/filtrar.png') }}" alt="img_filtro">
-            </button>
-            <p>Filtrar</p>
+    <div id="centerButton">
+        <i class="fa-solid fa-location-crosshairs"></i>
+    </div>    
+    <div class="search-container">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Busque aquí...">
+          <div id="searchButton">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
         </div>
+        
+        <div id="searchSuggestions" class="search-suggestions"></div>
     </div>
+    
+
 
     <img id="logo" src="{{ url_for('static', filename='images/Sello_Universal_Inclusivo.png') }}" alt="Logo">
 
     <a href="{{ url_for('login') }}" class="login-button"><i class="fa fa-user" aria-hidden="true"></i> Admin</a>
 
+    <div id="infoBox" class="info-box" aria-labelledby="info-nombre" role="dialog" aria-modal="true">
+        <button id="close-info-box" class="close-button" aria-label="Cerrar información">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <img id="info-img" src="" alt="Imagen del Edificio">
+        
+        <div class="info-header">
+            <h2 id="info-nombre"></h2>
+        </div>
     
+        <div class="info-actions">
+            <button class="action-button">
+                <i class="fas fa-directions"></i>
+                <span>Cómo llegar</span>
+            </button>
+        </div>
+    
+        <div class="info-content">
+            <div class="info-item">
+                <i class="fas fa-map-marker-alt info-icon"></i>
+                <p class="info-text">
+                    <strong>Dirección:</strong><br>
+                    <span id="info-direccion"></span>
+                </p>
+            </div>
+    
+            <div class="info-item">
+                <i class="fas fa-clock info-icon"></i>
+                <p class="info-text">
+                    <strong>Horario de Atención:</strong><br>
+                    <span id="info-horario"></span>
+                </p>
+            </div>
+    
+            <div class="info-item">
+                <i class="fas fa-globe info-icon"></i>
+                <p class="info-text">
+                    <strong>Sitio Web:</strong><br>
+                    <a id="info-sitioweb" href="" target="_blank" rel="noopener noreferrer"></a>
+                </p>
+            </div>
+    
+            <div class="info-item">
+                <i class="fas fa-universal-access info-icon"></i>
+                <p class="info-text">
+                    <strong>Accesibilidad:</strong>
+                </p>
+                <ul id="info-accesibilidad"></ul>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="locationError">
+      <span id="locationErrorMessage">Error de geolocalización</span>
+      <button class="close-btn" id="btnCerrarErrorUbicacion">✕</button>
+    </div>
+  
+    
+
+
+    <div id="routeModal" class="route-modal">
+      <div class="route-modal-content">
+        <span class="route-modal-close">&times;</span>
+        <h3 class="route-modal-title">Detalles de la Ruta</h3>
+        <div class="route-mode-buttons">
+          <button id="walkingMode" class="route-mode-button">
+            <i class="fas fa-walking"></i> Caminar
+          </button>
+          <button id="drivingMode" class="route-mode-button">
+            <i class="fas fa-car"></i> Conducir
+          </button>
+        </div>
+    
+        <!-- Información básica que aparecerá solo en móviles -->
+        <div id="routeDistanceMobile" class="route-basic-info-mobile"></div>
+        <div id="routeTimeMobile" class="route-basic-info-mobile"></div>
+    
+        <!-- Información en PC -->
+        <div class="route-details-info">
+          <span id="routeDistance" class="route-basic-info"></span>
+          <span id="routeTime" class="route-basic-info"></span>
+        </div>
+    
+        <div id="routeDetails" class="route-details">
+          <!-- Detalles de la ruta -->
+        </div>
+        <button id="moreInfoButton" class="more-info-button">
+          Si quieres más información presione aquí
+        </button>
+      </div>
+    </div>
+      
+    
+
+    
+
+
+</div>
 
 </body>
 

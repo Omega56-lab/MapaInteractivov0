@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa Interactivo</title>
+    <title>Sello Universal Inclusivo</title>
     <script src="{{ url_for('static', filename='js/js_admin/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/js_admin/add_edificio.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style_admin/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
     <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&loading=async&region=CL&language=es&callback=initMap" async defer></script>
@@ -14,66 +16,370 @@
 
 <body>
     <div id="map"></div>
-    
-    <div class="search-bar">
-        <input type="text" placeholder="Busque aqui...." readonly>
-        <button type="button">
-            <img src="https://img.icons8.com/material-rounded/24/000000/search.png" alt="Search">
-        </button>
-    </div>
-    <div id="info-box"></div>
-    <div id="barra_izquierda">
-        <div>
-            <button id="filtro">
-                <img src="{{ url_for('static', filename='images/filtrar.png') }}" alt="img_filtro">
-            </button>
-            <p>Filtrar</p>
+    <div id="centerButton">
+        <i class="fa-solid fa-location-crosshairs"></i>
+    </div>  
+    <div class="search-container">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Busque aquí...">
+          <button type="button" id="searchButton">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
         </div>
+        <div id="searchSuggestions" class="search-suggestions"></div>
+    </div>
+
+    <div id="barra_izquierda">
+        {% if user_role != 2 %}
+        <div>
+            <button id="add_admin" onclick="redirectToAdminPage()">
+                <img src="{{ url_for('static', filename='images/admin.png') }}" alt="img_filtro">
+            </button>
+            <p>Agregar Admin</p>
+        </div>
+        {% endif %}
         <div>
             <button id="agregar-marcador" class="add-marker-btn">
                 <img src="{{ url_for('static', filename='images/add_marker.png') }}" alt="Agregar Marcador">
             </button>
-            <p>Marcador</p>
+            <p>Agregar Marcador</p>
         </div>
-        
     </div>
+
     <img id="logo" src="{{ url_for('static', filename='images/Sello_Universal_Inclusivo.png') }}" alt="Logo">
 
+
     <div class="user-menu">
-        <button class="user-button">{{ session['user_name'] }}</button>
+        <button class="user-button">
+            <span class="user-name">{{ session['user_name'] }}</span>
+            <span class="chevron"></span>
+        </button>
         <div class="dropdown-menu">
             <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
         </div>
     </div>
+
+
+
+
+    <div id="infoBox" class="info-box" aria-labelledby="info-nombre" role="dialog" aria-modal="true">
+        <button id="close-info-box" class="close-button" aria-label="Cerrar información">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <img id="info-img" src="" alt="Imagen del Edificio">
+        
+        <div class="info-header">
+            <h2 id="info-nombre"></h2>
+        </div>
     
-    <!-- Modal del formulario -->
-    <div id="form-modal" class="modal">
+        <div class="info-actions">
+            <button class="action-button">
+                <i class="fas fa-directions"></i>
+                <span>Cómo llegar</span>
+            </button>
+        </div> 
+    
+        <div class="info-content">
+            <div class="info-item">
+                <i class="fas fa-map-marker-alt info-icon"></i>
+                <p class="info-text">
+                    <strong>Dirección:</strong><br>
+                    <span id="info-direccion"></span>
+                </p>
+            </div>
+    
+            <div class="info-item">
+                <i class="fas fa-clock info-icon"></i>
+                <p class="info-text">
+                    <strong>Horario de Atención:</strong><br>
+                    <span id="info-horario"></span>
+                </p>
+            </div>
+    
+            <div class="info-item">
+                <i class="fas fa-globe info-icon"></i>
+                <p class="info-text">
+                    <strong>Sitio Web:</strong><br>
+                    <a id="info-sitioweb" href="" target="_blank" rel="noopener noreferrer"></a>
+                </p>
+            </div>
+    
+            <div class="info-item">
+                <i class="fas fa-universal-access info-icon"></i>
+                <p class="info-text">
+                    <strong>Accesibilidad:</strong>
+                </p>
+                <ul id="info-accesibilidad"></ul>
+            </div>
+        </div>
+    
+        <div class="action-buttons">
+            <button id="edit-marker" class="edit-button">
+                <i class="fas fa-edit"></i>
+                Modificar
+            </button>
+            <button id="delete-marker" class="delete-button">
+                <i class="fas fa-trash"></i>
+                Eliminar
+            </button>
+        </div>
+    </div>
+
+
+
+
+    <div id="agregarEdificioModal" class="edificio-modal">
         <div class="modal-content">
-            <h1></h1>
-            <button type="button" id="close-modal" class="close">X</button>
-            <form id="add-building-form">
-                <label for="nombre">Nombre del Edificio:</label>
-                <input type="text" id="nombre" name="nombre" required>
-        
-                <label for="direccion">Dirección:</label>
-                <input type="text" id="direccion" name="direccion" required>
-        
-                <label for="latitud">Latitud:</label>
-                <input type="number" step="0.000001" id="latitud" name="latitud" required maxlength="9"><br>
-        
-                <label for="longitud">Longitud:</label>
-                <input type="number" step="0.000001" id="longitud" name="longitud" required maxlength="9"><br>
-        
-                <label for="tipo-accesibilidad">Tipo de Accesibilidad:</label>
-                <div id="tipo-accesibilidad-container">
-                    <!-- Los checkboxes se generarán dinámicamente desde el JavaScript -->
-                </div> 
-        
-                <button id="submit-button" class="btn-1" type="submit">Agregar Edificio</button>
+            <header class="modal-header">
+                <h2>Agregar Nuevo Edificio</h2>
+                <button class="close">&times;</button>
+            </header>
+            <form id="agregarEdificioForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre del Edificio</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="tipoEdificio">Tipo de Edificio</label>
+                    <select id="tipoEdificio" name="tipoEdificio" required>
+                        <option value="">Seleccione un tipo</option>
+                        <option value="Hospital">Hospital</option>
+                        <option value="Restaurante">Restaurante</option>
+                        <option value="Escuela">Escuela</option>
+                        <option value="Universidad">Universidad</option>
+                        <option value="Comisaria">Comisaría</option>
+                        <option value="Centro comercial">Centro comercial</option>
+                        <option value="Hotel">Hotel</option>
+                        <option value="Estación de bomberos">Estación de bomberos</option>
+                        <option value="Iglesia">Iglesia</option>
+                        <option value="Gimnasio">Gimnasio</option>
+                        <option value="Parque">Parque</option>
+                        <option value="Estación de tren">Estación de tren</option>
+                        <option value="Aeropuerto">Aeropuerto</option>
+                        <option value="Estadio">Estadio</option>
+                        <option value="Clínica">Clínica</option>
+                        <option value="Estación de servicio">Estación de servicio</option>
+                        <option value="Tienda">Tienda</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="direccion">Dirección</label>
+                    <input type="text" id="direccion" name="direccion" required>
+                </div>
+                <div class="form-group">
+                    <label for="imagen">URL de Imagen</label>
+                    <input type="url" id="imagen" name="imagen" required>
+                </div>
+                <div class="form-group form-group-inline">
+                    <div>
+                        <label for="horarioInicio">Horario de Inicio</label>
+                        <input type="time" id="horarioInicio" name="horarioInicio" required>
+                    </div>
+                    <div>
+                        <label for="horarioFin">Horario de Fin</label>
+                        <input type="time" id="horarioFin" name="horarioFin" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sitioWeb">Sitio Web</label>
+                    <input type="url" id="sitioWeb" name="sitioWeb">
+                </div>
+                <div class="form-group form-group-inline">
+                    <div>
+                        <label for="latitud">Latitud</label>
+                        <input type="number" id="latitud" name="latitud" step="any" required>
+                    </div>
+                    <div>
+                        <label for="longitud">Longitud</label>
+                        <input type="number" id="longitud" name="longitud" step="any" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Accesibilidad</label>
+                    <div id="accesibilidadContainer" class="accesibilidad-container">
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="rampa" name="accesibilidad" value="Rampa">
+                            <label for="rampa">Rampa</label>
+                        </div>
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="banos" name="accesibilidad" value="Baños para Discapacitados">
+                            <label for="banos">Baños para Discapacitados</label>
+                        </div>
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="ascensor" name="accesibilidad" value="Ascensor">
+                            <label for="ascensor">Ascensor</label>
+                        </div>
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="estacionamiento" name="accesibilidad" value="Estacionamiento para Discapacitados">
+                            <label for="estacionamiento">Estacionamiento para Discapacitados</label>
+                        </div>
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="senalizacion" name="accesibilidad" value="Señalización Inclusiva">
+                            <label for="senalizacion">Señalización Inclusiva</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-primary btn-full-width">Agregar Edificio</button>
+                </div>
             </form>
         </div>
-        
     </div>
+
+
+    <div id="editarEdificioModal" class="edificio-modal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Editar Edificio</h2>
+                <button class="close">&times;</button>
+            </header>
+            <form id="editarEdificioForm">
+                <div class="form-group">
+                    <label for="editNombre">Nombre del Edificio</label>
+                    <input type="text" id="editNombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTipoEdificio">Tipo de Edificio</label>
+                    <select id="editTipoEdificio" name="tipoEdificio" required>
+                        <option value="">Seleccione un tipo</option>
+                        <option value="Hospital">Hospital</option>
+                        <option value="Restaurante">Restaurante</option>
+                        <option value="Escuela">Escuela</option>
+                        <option value="Universidad">Universidad</option>
+                        <option value="Comisaria">Comisaría</option>
+                        <option value="Centro comercial">Centro comercial</option>
+                        <option value="Hotel">Hotel</option>
+                        <option value="Estación de bomberos">Estación de bomberos</option>
+                        <option value="Iglesia">Iglesia</option>
+                        <option value="Gimnasio">Gimnasio</option>
+                        <option value="Parque">Parque</option>
+                        <option value="Estación de tren">Estación de tren</option>
+                        <option value="Aeropuerto">Aeropuerto</option>
+                        <option value="Estadio">Estadio</option>
+                        <option value="Clínica">Clínica</option>
+                        <option value="Estación de servicio">Estación de servicio</option>
+                        <option value="Tienda">Tienda</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDireccion">Dirección</label>
+                    <input type="text" id="editDireccion" name="direccion" required>
+                </div>
+                <div class="form-group">
+                    <label for="editImagen">URL de Imagen</label>
+                    <input type="url" id="editImagen" name="imagen">
+                </div>
+                <div class="form-group form-group-inline">
+                    <div>
+                        <label for="editHorarioInicio">Horario de Inicio</label>
+                        <input type="time" id="editHorarioInicio" name="horarioInicio" required>
+                    </div>
+                    <div>
+                        <label for="editHorarioFin">Horario de Fin</label>
+                        <input type="time" id="editHorarioFin" name="horarioFin" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editSitioWeb">Sitio Web</label>
+                    <input type="url" id="editSitioWeb" name="sitioWeb">
+                </div>
+                <div class="form-group form-group-inline">
+                    <div>
+                        <label for="editLatitud">Latitud</label>
+                        <input type="number" id="editLatitud" name="latitud" step="any" required>
+                    </div>
+                    <div>
+                        <label for="editLongitud">Longitud</label>
+                        <input type="number" id="editLongitud" name="longitud" step="any" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Accesibilidad</label>
+                    <div id="editAccesibilidadContainer" class="accesibilidad-container">
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="editRampa" name="accesibilidad" value="Rampa">
+                            <label for="editRampa">Rampa</label>
+                        </div>
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="editBanos" name="accesibilidad" value="Baños para Discapacitados">
+                            <label for="editBanos">Baños para Discapacitados</label>
+                        </div>
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="editAscensor" name="accesibilidad" value="Ascensor">
+                            <label for="editAscensor">Ascensor</label>
+                        </div>
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="editEstacionamiento" name="accesibilidad" value="Estacionamiento para Discapacitados">
+                            <label for="editEstacionamiento">Estacionamiento para Discapacitados</label>
+                        </div>
+                        <div class="accesibilidad-item">
+                            <input type="checkbox" id="editSenalizacion" name="accesibilidad" value="Señalización Inclusiva">
+                            <label for="editSenalizacion">Señalización Inclusiva</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-primary btn-full-width">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="routeModal" class="route-modal">
+        <div class="route-modal-content">
+          <span class="route-modal-close">&times;</span>
+          <h3 class="route-modal-title">Detalles de la Ruta</h3>
+          <div class="route-mode-buttons">
+            <button id="walkingMode" class="route-mode-button">
+              <i class="fas fa-walking"></i> Caminar
+            </button>
+            <button id="drivingMode" class="route-mode-button">
+              <i class="fas fa-car"></i> Conducir
+            </button>
+          </div>
+      
+          <!-- Información básica que aparecerá solo en móviles -->
+          <div id="routeDistanceMobile" class="route-basic-info-mobile"></div>
+          <div id="routeTimeMobile" class="route-basic-info-mobile"></div>
+      
+          <!-- Información en PC -->
+          <div class="route-details-info">
+            <span id="routeDistance" class="route-basic-info"></span>
+            <span id="routeTime" class="route-basic-info"></span>
+          </div>
+      
+          <div id="routeDetails" class="route-details">
+            <!-- Detalles de la ruta -->
+          </div>
+          <button id="moreInfoButton" class="more-info-button">
+            Si quieres más información presione aquí
+          </button>
+        </div>
+    </div>
+
+    <div id="locationError">
+        <span id="locationErrorMessage">Error de geolocalización</span>
+        <button class="close-btn" id="btnCerrarErrorUbicacion">✕</button>
+    </div>
+
+
+
+</div>
+
+<script>
+    function redirectToAdminPage() {
+        window.location.href = "{{ url_for('admin_management') }}";  
+    }
+</script>
+
 </body>
 
 </html>
+
