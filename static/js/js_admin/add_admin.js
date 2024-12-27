@@ -1,12 +1,12 @@
 // Espera a que el DOM esté completamente cargado
 document.addEventListener('DOMContentLoaded', function () {
     // Obtiene referencias a los elementos del DOM
-    const addAdminBtn = document.getElementById('addAdminBtn'); 
-    const modal = document.getElementById('adminModal'); 
-    const closeBtn = modal.querySelector('.close'); 
+    const addAdminBtn = document.getElementById('addAdminBtn');
+    const modal = document.getElementById('adminModal');
+    const closeBtn = modal.querySelector('.close');
     const form = document.getElementById('adminForm');
-    const adminList = document.getElementById('adminList'); 
-    const errorContainer = document.createElement('div'); 
+    const adminList = document.getElementById('adminList');
+    const errorContainer = document.createElement('div');
     errorContainer.className = 'modal-errors'; // Clase para estilizar mensajes de error
     form.appendChild(errorContainer); // Agrega el contenedor de errores al formulario
 
@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Si es edición, llena los campos con los datos del administrador
             document.getElementById('adminId').value = admin.id_admin || '';
             document.getElementById('nombre').value = admin.nombre_usuario || '';
+            document.getElementById('tipo_admin').value = admin.rol_id || '';
             document.getElementById('email').value = admin.correo || '';
             document.getElementById('confirmEmail').value = admin.correo || '';
             document.getElementById('password').required = false; // La contraseña no es obligatoria al editar
@@ -82,12 +83,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function validateForm() {
         let isValid = true;
         clearErrors(); // Limpia errores previos
-    
+
         const email = document.getElementById('email');
         const confirmEmail = document.getElementById('confirmEmail');
         const password = document.getElementById('password');
         const confirmPassword = document.getElementById('confirmPassword');
-    
+
         // Valida que no haya espacios en blanco en email y contraseña
         if (/\s/.test(email.value)) {
             showError(email, 'El email no puede contener espacios en blanco');
@@ -97,14 +98,14 @@ document.addEventListener('DOMContentLoaded', function () {
             showError(password, 'La contraseña no puede contener espacios en blanco');
             isValid = false;
         }
-    
+
         // Compara emails
         if (email.value !== confirmEmail.value) {
             showError(email, 'Los emails no coinciden');
             showError(confirmEmail, 'Los emails no coinciden');
             isValid = false;
         }
-    
+
         // Compara contraseñas si están ingresadas
         if (password.value || confirmPassword.value) {
             if (password.value !== confirmPassword.value) {
@@ -113,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 isValid = false;
             }
         }
-    
+
         return isValid; // Retorna el estado de validación
     }
 
@@ -166,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
         row.innerHTML = `
             <td class="truncate-email">${admin.nombre_usuario}</td>
             <td class="truncate-email">${admin.correo}</td>
-            <td>${admin.rol_id === 1 ? 'Super Admin' : 'Admin'}</td>
+            <td>${admin.rol_id === 2 ? 'Admin' : 'Semi-Admin'}</td>
             <td>
                 <div class="action-buttons">
                     <button class="edit-button" onclick="editAdmin(${admin.id_admin})">

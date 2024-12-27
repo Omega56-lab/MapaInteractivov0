@@ -50,11 +50,11 @@ html {
     max-width: 20vw;
   }
 
-  /* Ajustes para la barra lateral en móvil */
+
   #barra_izquierda {
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 140px); /* Ajusta este valor según sea necesario */
+    width: calc(100% - 140px); 
     max-width: 300px;
   }
 }
@@ -388,7 +388,6 @@ html {
   }
 }
 
-/* Estilos para el contenedor .info-item que contiene #info-accesibilidad */
 .info-item:has(#info-accesibilidad) {
   margin-bottom: 8px; 
 }
@@ -634,13 +633,12 @@ html {
 /*----------------------------------------------------*/
 
 /*----------------------------Modal de ruta------------------------------------------ */
-/* Modal principal */
 .route-modal {
   display: none;
   position: fixed;
   z-index: 1000;
   left: 20px;
-  top: 20px;
+  top: 30px;
   width: 300px;
   max-width: 90%;
   background-color: #ffffff;
@@ -652,7 +650,6 @@ html {
   padding: 20px;
 }
 
-/* Botón de cierre */
 .route-modal-close {
   color: #aaa;
   float: right;
@@ -667,7 +664,6 @@ html {
   color: #000;
 }
 
-/* Título del modal */
 .route-modal-title {
   margin-top: 0;
   margin-bottom: 15px;
@@ -676,7 +672,6 @@ html {
   text-align: center;
 }
 
-/* Botones de selección de modo de ruta */
 .route-mode-buttons {
   display: flex;
   justify-content: space-between;
@@ -704,31 +699,30 @@ html {
   color: white;
 }
 
-/* Información básica de distancia y tiempo */
 .route-basic-info {
   font-size: 14px;
   color: #333;
   text-align: center;
   margin-top: 10px;
-  display: none; /* Oculto por defecto y visible según el contexto */
+  display: none; 
 }
 
 .route-details-info {
-  display: none; /* Mostrar sólo en PC */
+  display: none; 
 }
 
 .route-basic-info-mobile {
-  display: none; /* Mostrar solo en móvil */
+  display: none;
 }
 
-/* Detalles de la ruta */
+
 .route-details {
   font-size: 14px;
   line-height: 1.6;
   margin-top: 10px;
 }
 
-/* Botón de más información */
+
 .more-info-button {
   display: block;
   width: 100%;
@@ -747,7 +741,7 @@ html {
   background-color: #45a049;
 }
 
-/* Estilos específicos para móviles */
+
 @media (max-width: 768px) {
   .route-modal {
     left: 0;
@@ -766,7 +760,7 @@ html {
     display: block;
   }
 
-  /* Mostrar solo la información básica de distancia y tiempo en móvil */
+  
   .route-basic-info {
     display: block;
   }
@@ -780,7 +774,7 @@ html {
   }
 
   .route-details {
-    display: none; /* Ocultar detalles en móviles */
+    display: none; 
   }
 }
 
@@ -836,3 +830,27 @@ html {
 }
 
 /*--------------------------------------------------------------------------*/
+/*------------------Boton redireccion formulario----------------------------*/
+.map-data-button {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: rgb(0, 0, 0);
+  text-decoration: none;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: Arial, sans-serif;
+  border-top-right-radius: 3px;
+  backdrop-filter: blur(5px);
+  transition: background-color 0.3s ease;
+}
+
+@media screen and (max-width: 768px) {
+  .map-data-button {
+      font-size: 11px;
+      padding: 3px 6px;
+  }
+}
+
+/*---------------------------------------------------------------*/

@@ -10,11 +10,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style_user/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&libraries=marker&loading=async&region=CL&language=es&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&loading=async&region=CL&language=es&libraries=geometry&callback=initMap" async defer></script>
 </head>
 
 <body>
     <div id="map"></div>
+    <a href="https://forms.gle/zSsnxihJvWoE9YgW6" class="map-data-button">Proponer Marcador</a>
     <div id="centerButton">
         <i class="fa-solid fa-location-crosshairs"></i>
     </div>    
@@ -34,7 +35,7 @@
     
 
 
-    <img id="logo" src="{{ url_for('static', filename='images/Sello_Universal_Inclusivo.png') }}" alt="Logo">
+    <img id="logo" src="{{ url_for('static', filename='images/Sello_Universal_Inclusivo.webp') }}" alt="Logo">
 
     <a href="{{ url_for('login') }}" class="login-button"><i class="fa fa-user" aria-hidden="true"></i> Admin</a>
 

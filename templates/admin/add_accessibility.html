@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edicion Accesibilidad</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_admin/add_accessibility.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body>
+    <div class="header-container">
+        <a href="{{ url_for('index') }}" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Volver atrás
+        </a>
+    </div>
+    <div class="container">
+        <h1>Gestión de Accesibilidad</h1>
+        <button id="addAccesoBtn" class="btn btn-primary">
+            Agregar Nuevo Acceso
+        </button>
+
+        <div class="table-container">
+            <table id="tipos_accessibility_Table">
+                <thead>
+                    <tr>
+                        <th class="truncate-email">Tipos de Accesos</th>
+                        <th class="truncate-email">Exterior</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tiposList">
+                    <!-- La lista de accesibilidad se llenará dinámicamente aquí -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para Agregar/Editar accesibilidad -->
+    <div id="tiposModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Añadir acceso</h2>
+            <form id="tiposForm">
+                <input type="hidden" id="tiposId" name="tiposId">
+                <div class="form-group">
+                    <label for="nombre">Nombre de acceso</label>
+                    <input type="text" id="nombre" name="nombre" maxlength="50" placeholder="(máx. 50 caracteres)"  required>
+                </div>
+                <div class="form-group">
+                    <label for="nombre">¿La accesibilidad se encontrar en el exterior?</label>
+                    <select id="exterior_accesibilidad" name="exterior_accesibilidad" required>
+                        <option value="">Seleccione un tipo</option>
+                        <option value="0">No</option>
+                        <option value="1">Sí</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-submit">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/js_admin/add_accessibility.js') }}"></script>
+</body>
+
+</html>

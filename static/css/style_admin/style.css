@@ -36,7 +36,7 @@ html {
 
 @media screen and (max-width: 768px) {
   #logo {
-    top: 30px;
+    top: 20px;
     left: 30px;
     width: 80px;
   }
@@ -50,13 +50,6 @@ html {
     max-width: 20vw;
   }
 
-  /* Ajustes para la barra lateral en móvil */
-  #barra_izquierda {
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 140px); 
-    max-width: 300px;
-  }
 }
 
 @media screen and (max-height: 480px) and (orientation: landscape) {
@@ -181,11 +174,11 @@ html {
   }
 
   .search-bar {
-    padding: 3px 10px;
+    padding: 10px;
   }
 
   .search-bar input {
-    font-size: 12px;
+    font-size: 14px;
     padding: 6px;
   }
 
@@ -202,9 +195,6 @@ html {
     font-size: 12px;
   }
 }
-
-
-
 
 /*---------------------------------------------------------------------------*/
 
@@ -230,19 +220,43 @@ html {
   transition: all 0.3s ease;
 }
 
-#barra_izquierda:hover {
-  width: 80px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
 #barra_izquierda div {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
+  cursor: pointer;  
 }
 
-#agregar-marcador{
+#barra_izquierda button {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%; 
+  padding: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-radius: 5px;
+  justify-content: center;
+  text-align: center;
+}
+
+#barra_izquierda button p {
+  margin: 5px 0 0;
+  color: #333;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;  
+}
+
+#barra_izquierda button:hover {
+  background-color: rgba(0, 0, 0, 0.05);  
+}
+
+#agregar-marcador, #add_admin, #edit-accesibilidad, #agregar-line {
   background: none;
   border: none;
   cursor: pointer;
@@ -254,23 +268,7 @@ html {
   justify-content: center;
 }
 
-#add_admin{
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 5px;
-  transition: background-color 0.2s ease;
-  border-radius: 5px;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-#agregar-marcador:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-#add_admin:hover {
+#agregar-marcador:hover, #add_admin:hover, #edit-accesibilidad:hover, #agregar-line:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -281,94 +279,71 @@ html {
   transition: transform 0.2s ease;
 }
 
-#barra_izquierda p {
-  margin: 5px 0 0;
-  color: #333;
-  font-size: 12px;
-  line-height: 1.2;
-  text-align: center;
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 80px;
+  left: 12%;
+  transform: translateX(-88%);
+  background-color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
-@media screen and (max-width: 1024px) {
-  #barra_izquierda {
-    width: 60px;
-  }
-
-  #barra_izquierda:hover {
-    width: 70px;
-  }
-
-  #barra_izquierda p {
-    font-size: 11px;
-  }
+.menu-toggle img {
+  width: 70%; 
+  height: 70%;
+  object-fit: contain; 
+  pointer-events: none; 
 }
 
 @media screen and (max-width: 768px) {
   #barra_izquierda {
-    width: 50px;
-    left: 10px;
-  }
-
-  #barra_izquierda:hover {
-    width: 60px;
-  }
-
-  #barra_izquierda img {
-    width: 70%;
-  }
-
-  #barra_izquierda p {
-    font-size: 10px;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  #barra_izquierda {
+    display: none;
     position: fixed;
-    bottom: 20px;
-    left: 50%;
-    top: unset;
+    left: 25%;
+    top: 150px;
     transform: translateX(-50%);
-    width: auto;
-    height: auto;
+    width: 50%;
+    max-width: 250px;
     flex-direction: row;
-    justify-content: center;
-    padding: 10px;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 15px;
     border-radius: 15px;
+    margin-left: 6vh;
+    transition: none; 
+  }
+
+  #barra_izquierda.active {
+      display: flex;
+      transition: display 0.3s ease; 
   }
 
   #barra_izquierda div {
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 10px;
-  }
-
-
-  #agregar-marcador{
-    width: auto;
+      width: calc(50% - 10px);
+      margin-bottom: 10px;
   }
 
   #barra_izquierda img {
-    width: 24px;
-    height: 24px;
+      width: 30px;
+      height: 30px;
   }
 
   #barra_izquierda p {
-    margin: 5px 0 0;
-    font-size: 10px;
+      font-size: 10px;
   }
 
-  #barra_izquierda:hover {
-    width: unset;
+  .menu-toggle {
+      display: block;
   }
-
-  
 }
 
-
 /*------------------------------------------------*/
-
-
 
 
 /*-------------------Barra Usuario------------*/
@@ -382,106 +357,103 @@ html {
 .user-button {
   display: flex;
   align-items: center;
-  padding: 10px 15px;
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 6px;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #ffffff;
+  color: #1e293b;
+  border: 1px solid #9baee6;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
   font-family: Arial, sans-serif;
-  text-decoration: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.user-button:hover, .user-button:focus {
-  background-color: #1d4ed8;
+.user-button:hover,
+.user-button:focus {
+  background-color: #f8fafc;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .user-button:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.5);
 }
 
 .chevron {
   margin-left: 8px;
+  width: 12px;
+  height: 12px;
+  background-color: #64748b;
+  clip-path: polygon(50% 0%, 100% 66%, 0% 66%);
   transition: transform 0.3s ease;
 }
 
-.chevron::after {
-  content: '▼';
-  font-size: 12px;
-}
-
-.user-button:focus .chevron,
-.user-button:hover .chevron {
-  transform: translateY(2px);
+.user-button.open .chevron {
+  transform: rotate(180deg);
 }
 
 .dropdown-menu {
   display: none;
   position: absolute;
-  top: calc(100% + 5px);
+  top: calc(100% + 8px);
   right: 0;
   background-color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  min-width: 140px;
-  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
+  min-width: 160px;
+  border-radius: 8px;
   overflow: hidden;
   opacity: 0;
   transform: translateY(-10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.user-menu:hover .dropdown-menu,
-.user-button:focus + .dropdown-menu {
+.dropdown-menu.show {
   display: block;
   opacity: 1;
   transform: translateY(0);
 }
 
 .dropdown-menu a {
-  color: #1e3a8a;
-  padding: 10px 14px;
+  color: #1e293b;
+  padding: 12px 16px;
   text-decoration: none;
   display: block;
   font-family: Arial, sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .dropdown-menu a:hover {
-  background-color: #eff6ff;
-  color: #1d4ed8;
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
 @media screen and (max-width: 768px) {
   .user-menu {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      width: auto;
+    top: 15px;
+    right: 15px;
   }
 
   .user-button {
-      padding: 8px 12px;
-      font-size: 12px;
+    padding: 10px 14px;
+    font-size: 12px;
   }
 
   .dropdown-menu {
-      top: calc(100% + 5px);
-      right: 0;
-      width: auto;
-      min-width: 120px;
+    min-width: 137px;
   }
 
   .dropdown-menu a {
-      font-size: 12px;
-      padding: 8px 12px;
+    font-size: 12px;
+    padding: 10px 14px;
   }
 }
+
+
+
 /*----------------------------------------------------*/
 
 /*--------------------------------------------------- css info box-----------------------------------------------------*/
@@ -503,7 +475,7 @@ html {
 }
 
 .info-box.active {
-  visibility: visible; /* Hazlo visible */
+  visibility: visible; 
   opacity: 1;
   transform: translateY(0);
 }
@@ -627,7 +599,7 @@ html {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  padding-left: 6px; /* Alineado con el texto "Accesibilidad" */
+  padding-left: 6px; 
   margin: 0;
   list-style-type: none;
   width: 100%;
@@ -651,7 +623,6 @@ html {
   color: #5f6368;
 }
 
-/* Estilos para pantallas más pequeñas */
 @media (max-width: 400px) {
   #info-accesibilidad {
     padding-left: 16px;
@@ -663,15 +634,14 @@ html {
   }
 }
 
-/* Estilos para el contenedor .info-item que contiene #info-accesibilidad */
 .info-item:has(#info-accesibilidad) {
-  margin-bottom: 8px; /* Añade un poco de espacio debajo del contenedor */
+  margin-bottom: 8px; 
 }
 
 .info-item:has(#info-accesibilidad) .info-text {
   display: flex;
   align-items: center;
-  margin-bottom: 4px; /* Espacio entre el título y la lista de accesibilidad */
+  margin-bottom: 4px; 
 }
 
 .info-item:has(#info-accesibilidad) .info-icon {
@@ -823,6 +793,7 @@ html {
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   max-height: 96vh;
   overflow-y: auto;
+  animation: accessibilityModalFadeIn 0.3s;
 }
 
 .edificio-modal .modal-header {
@@ -835,7 +806,7 @@ html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 1;
+  z-index: 10; 
 }
 
 .edificio-modal .modal-header h2 {
@@ -1114,7 +1085,6 @@ html {
 /*-------------------------------------------------------------------*/
 
 /*----------------------------Modal de ruta------------------------------------------ */
-/* Modal principal */
 .route-modal {
   display: none;
   position: fixed;
@@ -1132,7 +1102,6 @@ html {
   padding: 20px;
 }
 
-/* Botón de cierre */
 .route-modal-close {
   color: #aaa;
   float: right;
@@ -1147,7 +1116,6 @@ html {
   color: #000;
 }
 
-/* Título del modal */
 .route-modal-title {
   margin-top: 0;
   margin-bottom: 15px;
@@ -1156,7 +1124,6 @@ html {
   text-align: center;
 }
 
-/* Botones de selección de modo de ruta */
 .route-mode-buttons {
   display: flex;
   justify-content: space-between;
@@ -1184,31 +1151,29 @@ html {
   color: white;
 }
 
-/* Información básica de distancia y tiempo */
 .route-basic-info {
   font-size: 14px;
   color: #333;
   text-align: center;
   margin-top: 10px;
-  display: none; /* Oculto por defecto y visible según el contexto */
+  display: none; 
 }
 
 .route-details-info {
-  display: none; /* Mostrar sólo en PC */
+  display: none; 
 }
 
 .route-basic-info-mobile {
-  display: none; /* Mostrar solo en móvil */
+  display: none; 
 }
 
-/* Detalles de la ruta */
+
 .route-details {
   font-size: 14px;
   line-height: 1.6;
   margin-top: 10px;
 }
 
-/* Botón de más información */
 .more-info-button {
   display: block;
   width: 100%;
@@ -1227,7 +1192,7 @@ html {
   background-color: #45a049;
 }
 
-/* Estilos específicos para móviles */
+
 @media (max-width: 768px) {
   .route-modal {
     left: 0;
@@ -1246,7 +1211,7 @@ html {
     display: block;
   }
 
-  /* Mostrar solo la información básica de distancia y tiempo en móvil */
+
   .route-basic-info {
     display: block;
   }
@@ -1260,7 +1225,7 @@ html {
   }
 
   .route-details {
-    display: none; /* Ocultar detalles en móviles */
+    display: none; 
   }
 }
 
@@ -1281,7 +1246,7 @@ html {
   display: flex; 
   align-items: center;
   justify-content: space-between; 
-  width: 90%;
+  width: 80%;
   max-width: 400px;
   box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
   opacity: 0; 
@@ -1314,6 +1279,199 @@ html {
   flex: 1; 
   text-align: left; 
 }
+
+/*--------------------------------------------------------------------------*/
+
+/*------------------------Modal de linea accesibilidad----------------------*/
+.accessibility-modal {
+  display: none; 
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.accessibility-modal__content {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 500px;
+  animation: accessibilityModalFadeIn 0.3s;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: auto; 
+}
+
+.accessibility-form__fieldset {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+@keyframes accessibilityModalFadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.accessibility-modal__header {
+  position: sticky;
+  top: 0;
+  padding: 15px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10; 
+}
+
+.accessibility-modal__title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.accessibility-modal__close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.accessibility-modal__close-btn:hover {
+  transform: scale(1.1);
+}
+
+.accessibility-form {
+  padding: 20px;
+}
+
+.accessibility-form__group {
+  margin-bottom: 20px;
+}
+
+.accessibility-form__row {
+  display: flex;
+  gap: 20px;
+}
+
+.accessibility-form__label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.accessibility-form__input,
+.accessibility-form__select,
+.accessibility-form__textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.accessibility-form__textarea {
+  resize: vertical;
+  min-height: 100px;
+  max-height: 200px;
+  box-sizing: border-box;
+}
+
+.accessibility-form__input:focus,
+.accessibility-form__select:focus,
+.accessibility-form__textarea:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.accessibility-form__input-group {
+  display: flex;
+  align-items: center;
+}
+
+.accessibility-form__input-group .accessibility-form__input {
+  flex-grow: 1;
+}
+
+.accessibility-form__clear-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.accessibility-form__color-input {
+  width: 120px;  
+  height: 30px;  
+  padding: 0;
+  border-radius: 5px; 
+  cursor: pointer;
+}
+
+.accessibility-form__color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+
+
+.accessibility-form__submit-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.accessibility-form__submit-btn:hover {
+  background-color: #45a049;
+}
+
+@media screen and (max-width: 600px) {
+  .accessibility-modal__content {
+      width: 95%;
+  }
+
+  .accessibility-form__row {
+      flex-direction: column;
+      gap: 0;
+  }
+
+  .accessibility-modal__title {
+      font-size: 1.2rem;
+  }
+
+  .accessibility-form__input,
+  .accessibility-form__select,
+  .accessibility-form__textarea {
+      font-size: 16px; /* Prevents zoom on mobile */
+  }
+}
+
+
+
+
+
+
+
 
 /*--------------------------------------------------------------------------*/
 

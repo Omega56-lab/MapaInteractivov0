@@ -78,7 +78,7 @@ function initMap() {
                 position: position,
                 map: map,
                 icon: {
-                    url: `/static/images/marker/${edificio.tipo_edificio.toLowerCase()}.png`,  // Ruta de la imagen PNG
+                    url: `/static/images/marker/${edificio.tipo_edificio.toLowerCase()}.webp`,  // Ruta de la imagen WEBP
                     scaledSize: new google.maps.Size(30, 30),  // Tamaño del marcador
                     anchor: new google.maps.Point(15, 30)     // Punto de anclaje ajustado (centro inferior)
                 },
@@ -322,29 +322,56 @@ function initMap() {
 
     document.getElementById('close-info-box').addEventListener('click', ocultarInfoBox);
 
-    //actualiza el contendo del modal de infomacion
+    const imageCache = {};
+
     function actualizarContenidoInfoBox(edificio) {
         const imgElement = document.getElementById('info-img');
-        imgElement.src = edificio.imagen_url || 'https://via.placeholder.com/150?text=%3F'; // Imagen de reemplazo por defecto
+    
+        // Mostrar placeholder temporal inmediatamente
+        imgElement.src = 'https://via.placeholder.com/150?text=Cargando...';
         imgElement.alt = `Imagen de ${edificio.nombre}`;
-
-        // Si la imagen falla al cargar, muestra la imagen de reemplazo
-        imgElement.onerror = () => {
-            imgElement.src = 'https://via.placeholder.com/150?text=%3F';
-        };
-
+    
+        // Verificar si la imagen ya está en caché
+        if (imageCache[edificio.imagen_url]) {
+            imgElement.src = imageCache[edificio.imagen_url]; // Usar la imagen desde la caché
+            imgElement.alt = `Imagen de ${edificio.nombre}`;
+        } else {
+            // Crear una nueva instancia de Image para cargar la imagen en segundo plano
+            const tempImage = new Image();
+            tempImage.src = edificio.imagen_url || 'https://via.placeholder.com/150?text=%3F';
+    
+            tempImage.onload = () => {
+                imgElement.src = tempImage.src; // Actualizar la imagen al completarse la carga
+                imageCache[edificio.imagen_url] = tempImage.src; // Guardar en la caché
+            };
+    
+            tempImage.onerror = () => {
+                imgElement.src = 'https://via.placeholder.com/150?text=%3F'; // Imagen por defecto en caso de error
+                imgElement.alt = 'Imagen no disponible';
+            };
+        }
+    
+        // Actualizar otros elementos del modal
         document.getElementById('info-nombre').textContent = edificio.nombre;
         document.getElementById('info-direccion').textContent = edificio.direccion;
         document.getElementById('info-horario').textContent = `${edificio.horario_inicio} a ${edificio.horario_final}`;
-
+    
         const sitioWebElement = document.getElementById('info-sitioweb');
-        sitioWebElement.href = edificio.sitioweb;
-        sitioWebElement.textContent = edificio.sitioweb;
-
+        if (edificio.sitioweb) {
+            sitioWebElement.href = edificio.sitioweb; // Asignar el enlace si existe
+            sitioWebElement.textContent = "Enlace Página Web"; // Texto fijo para el enlace
+            sitioWebElement.style.pointerEvents = "auto"; // Habilitar clics
+            sitioWebElement.style.textDecoration = "underline"; // Opcional: añadir subrayado
+        } else {
+            sitioWebElement.removeAttribute("href"); // Eliminar el atributo href
+            sitioWebElement.textContent = "Sin sitio web"; // Mostrar texto plano
+            sitioWebElement.style.pointerEvents = "none"; // Deshabilitar clics
+            sitioWebElement.style.textDecoration = "none"; // Opcional: eliminar subrayado
+        }
         const accesibilidadList = document.getElementById('info-accesibilidad');
         accesibilidadList.innerHTML = '';
-
-        if (edificio.accesibilidad) { // Verifica si accesibilidad tiene valor
+    
+        if (edificio.accesibilidad) {
             edificio.accesibilidad.split(',').forEach(item => {
                 const li = document.createElement('li');
                 li.textContent = item.trim();
@@ -355,15 +382,15 @@ function initMap() {
             li.textContent = 'Sin información de accesibilidad';
             accesibilidadList.appendChild(li);
         }
-
+    
         const actionButton = document.querySelector('.action-button');
         actionButton.innerHTML = '<i class="fas fa-directions"></i><span>Cómo llegar</span>';
         actionButton.onclick = () => {
-            ocultarInfoBox(); // Cerrar InfoBox antes de abrir el modal
+            ocultarInfoBox();
             mostrarRutaEnModal(edificio);
         };
-
     }
+    
 
     //Abre el Modal de informacion
     function mostrarInfoBox() {
@@ -618,7 +645,7 @@ function initMap() {
 
     function mostrarRutaEnModal(edificio) {
         if (!userLocationMarker) {
-            alert("No se pudo obtener tu ubicación actual. Por favor, activa la geolocalización.");
+            alert("No se pudo obtener tu ubicación actual.");
             return;
         }
 
@@ -767,8 +794,148 @@ function initMap() {
     });
 
 
-    /*------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------*/
 
+/*--------------------------------------Funcion Marcas en mapa-------------------------------------------*/
+
+    let DataLineas = [];
+    let allLines = []; // Variable para almacenar las líneas creadas en el mapa
+
+    // Nivel de zoom mínimo para mostrar las líneas
+    const ZOOM_LINES = 18;
+
+    // Llamada a la función para obtener las líneas al cargar la página
+    fetchLineas();
+
+    // Función para obtener las líneas desde el servidor
+    function fetchLineas() {
+        fetch('/get_lineas_user')
+            .then(response => response.json())
+            .then(data => {
+                DataLineas = data.lineas; // Guardar datos de líneas
+
+                // Agregar las líneas al mapa después de obtener los datos
+                cargarLineasEnMapa(DataLineas);
+                
+            })
+            .catch(error => {
+                console.error('Error al obtener los datos:', error);
+            });
+    }
+    
+
+    // Función para cargar las líneas en el mapa
+    function cargarLineasEnMapa(dataLineas) {
+        // Limpiar las líneas existentes en el mapa
+        allLines.forEach(line => line.setMap(null));
+        allLines = [];
+
+        // Crear y agregar nuevas líneas al mapa
+        dataLineas.forEach(linea => {
+            const { latitud_inicio, longitud_inicio, latitud_final, longitud_final, color_line, nombre, descripcion } = linea;
+            agregarLineaAlMapa(latitud_inicio, longitud_inicio, latitud_final, longitud_final, color_line, nombre, descripcion);
+        });
+
+        // Configurar el evento de cambio de zoom para manejar la visibilidad
+        google.maps.event.addListener(map, 'zoom_changed', function () {
+            const zoom = map.getZoom();
+
+            // Mostrar u ocultar líneas según el nivel de zoom
+            allLines.forEach(line => {
+                line.setVisible(zoom >= ZOOM_LINES);
+            });
+        });
+    }
+
+    // Función para agregar la línea al mapa
+    function agregarLineaAlMapa(latitud_inicio, longitud_inicio, latitud_final, longitud_final, color, nombre, descripcion) {
+        const latInicio = parseFloat(latitud_inicio);
+        const lonInicio = parseFloat(longitud_inicio);
+        const latFinal = parseFloat(latitud_final);
+        const lonFinal = parseFloat(longitud_final);
+    
+        // Ruta de la imagen basada en el nombre, codificando el nombre
+        const imagenUrl = `/static/images/line/${encodeURIComponent(nombre)}.png`;
+    
+        // Crear la línea con un grosor fijo
+        const line = new google.maps.Polyline({
+            path: [
+                { lat: latInicio, lng: lonInicio },
+                { lat: latFinal, lng: lonFinal }
+            ],
+            geodesic: true,
+            strokeColor: color,
+            strokeOpacity: 1.0,
+            strokeWeight: 16, // Grosor fijo
+            visible: map.getZoom() >= ZOOM_LINES // Determinar visibilidad inicial
+        });
+    
+        // Crear el InfoWindow con la descripción
+        const infoWindow = new google.maps.InfoWindow({
+            content: `<div style="max-width: 300px;">
+                        <h3>${nombre}</h3>
+                        <p>${descripcion}</p>
+                      </div>`
+        });
+    
+        // Agregar evento de clic a la línea para mostrar el InfoWindow
+        line.addListener("click", (event) => {
+            infoWindow.setPosition(event.latLng);
+            infoWindow.open(map);
+        });
+    
+        // Agregar la línea al mapa
+        line.setMap(map);
+    
+        // Calcular puntos intermedios y agregar marcadores con la imagen
+        const puntos = 5; // Número de imágenes a colocar
+        const markers = []; // Array para almacenar los marcadores
+    
+        for (let i = 0; i < puntos; i++) { // Cambiamos de i <= puntos a i < puntos para evitar el último punto
+            const ajuste = 0.95; // Factor para que el último punto no esté en el borde (por ejemplo, 95% del trayecto)
+            const proporcion = i / (puntos - 1) * ajuste; // Ajustamos la proporción
+            const puntoIntermedio = google.maps.geometry.spherical.interpolate(
+                new google.maps.LatLng(latInicio, lonInicio),
+                new google.maps.LatLng(latFinal, lonFinal),
+                proporcion
+            );
+    
+            // Crear marcador en el punto intermedio con la imagen
+            const marker = new google.maps.Marker({
+                position: puntoIntermedio,
+                map: map,
+                icon: {
+                    url: imagenUrl, // Ruta de la imagen
+                    scaledSize: new google.maps.Size(16, 16), // Tamaño más pequeño para las imágenes
+                    anchor: new google.maps.Point(8, 4) // Anclaje centrado
+                },
+                visible: map.getZoom() >= ZOOM_LINES // Determinar visibilidad inicial del marcador
+            });
+    
+            // Agregar evento de clic al marcador
+            marker.addListener("click", () => {
+                infoWindow.setPosition(marker.getPosition());
+                infoWindow.open(map);
+            });
+    
+            markers.push(marker); // Agregar el marcador al array
+        }
+    
+        // Almacenar la línea en el array
+        allLines.push(line);
+    
+        // Escuchar el evento zoom_changed del mapa
+        google.maps.event.addListener(map, "zoom_changed", () => {
+            const zoomActual = map.getZoom();
+            const visible = zoomActual >= ZOOM_LINES;
+    
+            // Actualizar la visibilidad de la línea
+            line.setVisible(visible);
+    
+            // Actualizar la visibilidad de los marcadores
+            markers.forEach(marker => marker.setVisible(visible));
+        });
+    }
 
 }
 

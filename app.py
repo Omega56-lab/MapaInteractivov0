@@ -214,6 +214,8 @@ def logout():
     session.pop('logged_in', None)  
     return redirect(url_for('home'))  
 
+
+
 # Ruta: obtecion de datos de base de datos de los edificios
 @app.route('/get_edificios', methods=['GET'])
 def get_edificios():
@@ -261,28 +263,37 @@ def add_edificio():
     sitioweb = data.get('sitioweb')
     latitud = data['latitud']
     longitud = data['longitud']
-    tipo_edificio = data['tipo_edificio']  # Tipo de edificio seleccionado
-    tipo_accesibilidad = data['accesibilidad']  # Lista de accesibilidades seleccionadas
+    tipo_edificio_id = data['tipo_edificio']  # Ahora se recibe directamente el ID del tipo de edificio
+    tipo_accesibilidad_ids = data['tipo_accesibilidad']  # Lista de IDs de accesibilidades seleccionadas
 
-    # Obtener el id del tipo de edificio desde la base de datos
+    # Obtener conexión a la base de datos
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
 
     try:
+        # Comprobar si ya existe un edificio con la misma latitud y longitud
+        cursor.execute("""
+            SELECT COUNT(*) FROM edificios WHERE latitud = %s AND longitud = %s
+        """, (latitud, longitud))
+        
+        resultado = cursor.fetchone()
+        if resultado[0] > 0:
+            return jsonify({"error": "Ya existe un edificio con esta Latitud y Longitud"}), 400
+
         # Insertar el edificio con los nuevos campos
         cursor.execute("""
             INSERT INTO edificios (nombre, direccion, imagen_url, tipo_edificio, horario_inicio, horario_final, sitioweb, latitud, longitud)
             VALUES (%s, %s, %s, (SELECT id_tipos_edificios FROM tipos_edificios WHERE nombre_tipo = %s), %s, %s, %s, %s, %s)
-        """, (nombre, direccion, imagen_url, tipo_edificio, horario_inicio, horario_final, sitioweb, latitud, longitud))
+        """, (nombre, direccion, imagen_url, tipo_edificio_id, horario_inicio, horario_final, sitioweb, latitud, longitud))
         
         edificio_id = cursor.lastrowid  # Obtener el ID del edificio recién agregado
 
         # Insertar cada tipo de accesibilidad individualmente
-        for tipo in tipo_accesibilidad:
+        for tipo_id in tipo_accesibilidad_ids:
             cursor.execute("""
                 INSERT INTO edificios_accesibilidad (edificio_id, tipo_accesibilidad_id)
-                VALUES (%s, (SELECT id_tipos FROM tipos_accesibilidad WHERE nombre = %s))
-            """, (edificio_id, tipo))
+                VALUES (%s, %s)
+            """, (edificio_id, tipo_id))
         
         # Confirmar los cambios
         conn.commit()
@@ -295,6 +306,7 @@ def add_edificio():
     finally:
         cursor.close()
         conn.close()
+
 
 
 # Ruta de eliminar el edificio por su id en la base de datos
@@ -333,7 +345,7 @@ def edit_edificio(id):
     imagen_url = data.get('imagen_url')
     horario_inicio = data['horario_inicio']
     horario_final = data['horario_final']
-    sitioweb = data.get('sitioweb')
+    sitioweb = data['sitioweb']
     latitud = data['latitud']
     longitud = data['longitud']
     tipo_edificio_nombre = data['tipo_edificio']  # Recibimos el nombre del tipo de edificio
@@ -344,6 +356,15 @@ def edit_edificio(id):
     cursor = conn.cursor()
 
     try:
+        # Comprobar si ya existe un edificio con la misma latitud y longitud, excepto el que se está editando
+        cursor.execute("""
+            SELECT COUNT(*) FROM edificios WHERE latitud = %s AND longitud = %s AND id_edificios != %s
+        """, (latitud, longitud, id))
+        
+        resultado = cursor.fetchone()
+        if resultado[0] > 0:
+            return jsonify({"error": "Ya existe un edificio con esta Latitud y Longitud"}), 400
+
         # Obtener el ID del tipo de edificio basado en el nombre
         cursor.execute("""
             SELECT id_tipos_edificios FROM tipos_edificios WHERE nombre_tipo = %s
@@ -369,7 +390,7 @@ def edit_edificio(id):
         for tipo in tipo_accesibilidad:
             cursor.execute("""
                 INSERT INTO edificios_accesibilidad (edificio_id, tipo_accesibilidad_id)
-                VALUES (%s, (SELECT id_tipos FROM tipos_accesibilidad WHERE nombre = %s))
+                VALUES (%s, %s)
             """, (id, tipo))
 
         # Confirmar los cambios
@@ -383,6 +404,7 @@ def edit_edificio(id):
     finally:
         cursor.close()
         conn.close()
+
 
 # Decoracion donde verifica que si el admin ingresado es Superadmin o admin por su tipo de admin
 def super_admin_required(f):
@@ -400,6 +422,24 @@ def super_admin_required(f):
 def admin_management():
     return render_template('admin/add_admin.html')
 
+
+@app.route('/get_acessibilidad', methods=['GET'])
+@login_required
+def get_acessibilidad():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT * FROM tipos_accesibilidad")
+        acessibilidad = cursor.fetchall()
+
+        return jsonify(acessibilidad), 200
+    except mysql.connector.Error as e:
+        return jsonify({"error": f"Error de base de datos: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 # Ruta donde agrega el admin a la base de datos
 @app.route('/add_admin', methods=['POST'])
 @login_required
@@ -408,6 +448,7 @@ def add_admin():
     nombre = request.form['nombre']
     email = request.form['email']
     password = request.form['password']
+    rol_id = request.form['tipo_admin']
 
     try:
         conn = mysql.connector.connect(**db_config)
@@ -425,8 +466,8 @@ def add_admin():
         # Guardar el usuario en la base de datos, incluyendo la salt
         cursor.execute("""
             INSERT INTO usuario_admin (nombre_usuario, correo, password_hash, password_salt, rol_id, cuenta_nueva)
-            VALUES (%s, %s, %s, %s, 2, TRUE)
-        """, (nombre, email, password_hash, password_salt))
+            VALUES (%s, %s, %s, %s, %s, TRUE)
+        """, (nombre, email, password_hash, password_salt, rol_id))
 
         conn.commit()
         return jsonify({"success": True}), 200
@@ -449,7 +490,7 @@ def get_admins():
         cursor.execute("""
             SELECT id_admin, nombre_usuario, correo, rol_id
             FROM usuario_admin
-            WHERE rol_id = 2  
+            WHERE rol_id != 1  
         """)
 
         admins = cursor.fetchall()
@@ -460,6 +501,7 @@ def get_admins():
     finally:
         cursor.close()
         conn.close()
+
 # Ruta donde se obtiene los datos del admin por su id
 @app.route('/get_admin/<int:admin_id>', methods=['GET'])
 @login_required
@@ -494,6 +536,7 @@ def get_admin(admin_id):
 def edit_admin(admin_id):
     nombre = request.form['nombre']
     email = request.form['email']
+    rol_id = request.form['tipo_admin']
     password = request.form.get('password')  # Password es opcional en edición
 
     try:
@@ -509,15 +552,15 @@ def edit_admin(admin_id):
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             cursor.execute("""
                 UPDATE usuario_admin
-                SET nombre_usuario = %s, correo = %s, password_hash = %s
+                SET nombre_usuario = %s, correo = %s, rol_id = %s, password_hash = %s
                 WHERE id_admin = %s
-            """, (nombre, email, hashed_password, admin_id))
+            """, (nombre, email, rol_id, hashed_password, admin_id))
         else:
             cursor.execute("""
                 UPDATE usuario_admin
-                SET nombre_usuario = %s, correo = %s
+                SET nombre_usuario = %s, correo = %s, rol_id = %s
                 WHERE id_admin = %s
-            """, (nombre, email, admin_id))
+            """, (nombre, email, rol_id, admin_id))
 
         conn.commit()
         return jsonify({"success": True}), 200
@@ -527,6 +570,7 @@ def edit_admin(admin_id):
     finally:
         cursor.close()
         conn.close()
+
 # Ruta donde elimina al admin por su respectiva id
 @app.route('/delete_admin/<int:admin_id>', methods=['DELETE'])
 @login_required
@@ -554,6 +598,360 @@ def delete_admin(admin_id):
         cursor.close()
         conn.close()
 
+# Ruta de la pagina del manejo de accesibilidad
+@app.route('/admin/accessibility')
+@login_required
+@super_admin_required
+def admin_Accessibility():
+    return render_template('admin/add_accessibility.html')
+
+# Ruta donde se agrega un acceso a la base de datos
+@app.route('/add_access', methods=['POST'])
+@login_required
+@super_admin_required
+def add_access():
+    nombre = request.form['nombre']
+    exterior_accesibilidad = request.form['exterior_accesibilidad']
+
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Verificar si el acceso ya está registrado en tipos_accesibilidad
+        cursor.execute("SELECT * FROM tipos_accesibilidad WHERE nombre = %s", (nombre,))
+        if cursor.fetchone():
+            return jsonify({"success": False, "error": "El acceso ya está registrado"}), 400
+
+        # Guardar el acceso en la tabla tipos_accesibilidad
+        cursor.execute("INSERT INTO tipos_accesibilidad (nombre, exterior_accesibilidad) VALUES (%s, %s)", (nombre, exterior_accesibilidad))
+        conn.commit()
+        return jsonify({"success": True}), 200
+
+    except mysql.connector.Error as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Ruta donde se obtiene la lista de accesos
+@app.route('/get_accesses', methods=['GET'])
+@login_required
+@super_admin_required
+def get_accesses():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        # Seleccionar de tipos_accesibilidad
+        cursor.execute("SELECT id_tipos AS id, nombre, exterior_accesibilidad FROM tipos_accesibilidad")
+        accesses = cursor.fetchall()
+        return jsonify(accesses), 200
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Ruta donde se obtiene un acceso específico por su ID
+@app.route('/get_access/<int:access_id>', methods=['GET'])
+@login_required
+@super_admin_required
+def get_access(access_id):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        # Seleccionar de tipos_accesibilidad
+        cursor.execute("SELECT id_tipos AS id, nombre, exterior_accesibilidad FROM tipos_accesibilidad WHERE id_tipos = %s", (access_id,))
+        access = cursor.fetchone()
+        if access:
+            return jsonify(access), 200
+        else:
+            return jsonify({"error": "Acceso no encontrado"}), 404
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Ruta donde se edita un acceso
+@app.route('/edit_access/<int:access_id>', methods=['PUT'])
+@login_required
+@super_admin_required
+def edit_access(access_id):
+    nombre = request.form['nombre']
+    exterior_accesibilidad = request.form['exterior_accesibilidad']
+
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Verificar si el nombre ya está en uso en tipos_accesibilidad
+        cursor.execute("SELECT id_tipos FROM tipos_accesibilidad WHERE nombre = %s AND id_tipos != %s", (nombre, access_id))
+        if cursor.fetchone():
+            return jsonify({"success": False, "error": "El nombre ya está en uso por otro acceso"}), 400
+
+        # Actualizar en tipos_accesibilidad
+        cursor.execute("UPDATE tipos_accesibilidad SET nombre = %s, exterior_accesibilidad = %s WHERE id_tipos = %s", (nombre, exterior_accesibilidad, access_id))
+        conn.commit()
+        return jsonify({"success": True}), 200
+
+    except mysql.connector.Error as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Ruta donde se elimina un acceso por su ID
+@app.route('/delete_access/<int:access_id>', methods=['DELETE'])
+@login_required
+@super_admin_required
+def delete_access(access_id):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Verificar si el acceso existe antes de eliminar
+        cursor.execute("SELECT id_tipos FROM tipos_accesibilidad WHERE id_tipos = %s", (access_id,))
+        if not cursor.fetchone():
+            return jsonify({"success": False, "error": "Acceso no encontrado"}), 404
+
+        # Intentar eliminar de tipos_accesibilidad
+        cursor.execute("DELETE FROM tipos_accesibilidad WHERE id_tipos = %s", (access_id,))
+        conn.commit()
+        return jsonify({"success": True}), 200
+
+    except mysql.connector.Error as e:
+        print(f"Error de base de datos: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/check_access_usage/<int:access_id>', methods=['GET'])
+@login_required
+@super_admin_required
+def check_access_usage(access_id):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Verificar si el tipo de accesibilidad está asociado a algún edificio
+        cursor.execute("SELECT COUNT(*) FROM edificios_accesibilidad WHERE tipo_accesibilidad_id = %s", (access_id,))
+        count = cursor.fetchone()[0]
+
+        return jsonify({"in_use": count > 0}), 200
+
+    except mysql.connector.Error as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/get_lineas_user', methods=['GET'])
+def get_lineas_user():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        # Consulta SQL con JOIN para las líneas
+        query_lineas = """
+            SELECT 
+                am.id_accesibilidad_mapa,
+                am.descripcion,
+                am.color_line,
+                am.latitud_inicio,
+                am.longitud_inicio,
+                am.latitud_final,
+                am.longitud_final,
+                ta.id_tipos,
+                ta.nombre,
+                ta.exterior_accesibilidad
+            FROM accesibilidades_mapa am
+            JOIN tipos_accesibilidad ta
+            ON am.tipo_accesibilidad_id = ta.id_tipos
+            WHERE ta.exterior_accesibilidad = TRUE
+        """
+        cursor.execute(query_lineas)
+        lineas = cursor.fetchall()
+
+        # Enviar ambos resultados en un solo JSON
+        return jsonify({
+            'lineas': lineas,
+        }), 200
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": f"Error de base de datos: {str(e)}"}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+@app.route('/get_lineas', methods=['GET'])
+@login_required
+def get_lineas():
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        # Consulta SQL con JOIN para las líneas
+        query_lineas = """
+            SELECT 
+                am.id_accesibilidad_mapa,
+                am.descripcion,
+                am.color_line,
+                am.latitud_inicio,
+                am.longitud_inicio,
+                am.latitud_final,
+                am.longitud_final,
+                ta.id_tipos,
+                ta.nombre,
+                ta.exterior_accesibilidad
+            FROM accesibilidades_mapa am
+            JOIN tipos_accesibilidad ta
+            ON am.tipo_accesibilidad_id = ta.id_tipos
+            WHERE ta.exterior_accesibilidad = TRUE
+        """
+        cursor.execute(query_lineas)
+        lineas = cursor.fetchall()
+
+        # Consulta para obtener todos los tipos de accesibilidad donde exterior_accesibilidad es TRUE
+        query_tipos = """
+            SELECT id_tipos, nombre
+            FROM tipos_accesibilidad
+            WHERE exterior_accesibilidad = TRUE
+        """
+        cursor.execute(query_tipos)
+        tipos_accesibilidad = cursor.fetchall()
+
+        # Enviar ambos resultados en un solo JSON
+        return jsonify({
+            'lineas': lineas,
+            'tipos_accesibilidad': tipos_accesibilidad
+        }), 200
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": f"Error de base de datos: {str(e)}"}), 500
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+@app.route('/get_linea/<int:id>', methods=['GET'])
+@login_required
+def get_linea(id):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM accesibilidades_mapa WHERE id_accesibilidad_mapa = %s", (id,))
+        data = cursor.fetchone()
+        if data:
+            return jsonify(data)
+        else:
+            return jsonify({"error": "Línea no encontrada"}), 404
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/add_marca_accesibilidad', methods=['POST'])
+@login_required
+def add_marca_accesibilidad():
+    data = request.get_json()
+
+    # Campos del formulario
+    descripcion = data['descripcion']
+    color_line = data['color_line']
+    latitud_inicio = data['latitud_inicio']
+    longitud_inicio = data['longitud_inicio']
+    latitud_final = data['latitud_final']
+    longitud_final = data['longitud_final']
+    tipo_accesibilidad_id = data['tipo_accesibilidad_id']
+
+    # Obtener conexión a la base de datos   
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    try:
+        # Insertar la marca de accesibilidad con los nuevos campos
+        cursor.execute("""
+            INSERT INTO accesibilidades_mapa (descripcion, color_line, latitud_inicio, longitud_inicio, latitud_final, longitud_final, tipo_accesibilidad_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (descripcion, color_line, latitud_inicio, longitud_inicio, latitud_final, longitud_final, tipo_accesibilidad_id))
+        
+        conn.commit()
+        return jsonify(success=True)
+    
+    except mysql.connector.Error as e:
+        return jsonify({"error": f"Error de base de datos: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Error general: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/edit_marca_accesibilidad/<int:id>', methods=['PUT'])  
+@login_required 
+def edit_marca_accesibilidad(id):
+    data = request.get_json()
+
+    # Campos del formulario
+    descripcion = data['descripcion']
+    color_line = data['color_line']
+    latitud_inicio = data['latitud_inicio']
+    longitud_inicio = data['longitud_inicio']
+    latitud_final = data['latitud_final']
+    longitud_final = data['longitud_final']
+    tipo_accesibilidad_id = data['tipo_accesibilidad_id']
+
+    # Conexión con la base de datos
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    try:
+        # Actualizar los datos de la marca de accesibilidad
+        cursor.execute("""
+            UPDATE accesibilidades_mapa
+            SET descripcion = %s, color_line = %s, latitud_inicio = %s, longitud_inicio = %s, latitud_final = %s, longitud_final = %s, tipo_accesibilidad_id = %s
+            WHERE id_accesibilidad_mapa = %s
+        """, (descripcion, color_line, latitud_inicio, longitud_inicio, latitud_final, longitud_final, tipo_accesibilidad_id, id))
+
+        conn.commit()
+        return jsonify(success=True)
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": f"Error de base de datos: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Error general: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/delete_marca_accesibilidad/<int:id>', methods=['DELETE'])
+@login_required
+def delete_marca_accesibilidad(id):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # Eliminar la marca de accesibilidad
+        cursor.execute("DELETE FROM accesibilidades_mapa WHERE id_accesibilidad_mapa = %s", (id,))
+        
+        conn.commit()
+        return jsonify(success=True)
+
+    except mysql.connector.Error as e:
+        return jsonify({"error": f"Error de base de datos: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+        
 
 
 
