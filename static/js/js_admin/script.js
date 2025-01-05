@@ -1371,7 +1371,7 @@ function initMap() {
                 icon: {
                     url: imagenUrl, // Ruta de la imagen
                     scaledSize: new google.maps.Size(16, 16), // Tamaño más pequeño para las imágenes
-                    anchor: new google.maps.Point(8, 4) // Anclaje centrado
+                    anchor: new google.maps.Point(8, 0) // Anclaje centrado
                 },
                 visible: map.getZoom() >= ZOOM_LINES // Determinar visibilidad inicial del marcador
             });
